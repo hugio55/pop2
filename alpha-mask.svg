@@ -1,0 +1,6 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black background (transparent) -->
+  <rect width="1920" height="1080" fill="black"/>
+  <!-- White rounded rectangle (visible) -->
+  <rect x="60" y="60" width="1800" height="960" rx="80" ry="80" fill="white"/>
+</svg>

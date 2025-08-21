@@ -1,0 +1,2942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POPOLOGY - Video Platform</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-image: url('./stuff/bg-colored.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: white;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Background container */
+        .background-smoke {
+            position: fixed;
+            top: 82px; /* Height of header */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        /* Blurred background image */
+        .background-image {
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            right: -50px;
+            bottom: -50px;
+            background-image: url('./stuff/bg-colored.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        /* Blue overlay - Removed */
+        /* .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #1B2ECC;
+            opacity: 0.4;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+        } */
+        
+        @keyframes subtlePulse {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.3),
+                            0 0 20px rgba(255, 255, 255, 0.2),
+                            0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            50% {
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.5),
+                            0 0 30px rgba(255, 255, 255, 0.3),
+                            0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 66px;
+            background: #3a4a6b;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: inline-block;
+            background: linear-gradient(105deg,
+                #a8a8a8 0%,
+                #b8b8b8 10%,
+                #d0d0d0 20%,
+                #e0e0e0 30%,
+                #ffffff 40%,
+                #ffffff 50%,
+                #e0e0e0 60%,
+                #d0d0d0 70%,
+                #b8b8b8 80%,
+                #a8a8a8 100%);
+            background-size: 300% 100%;
+            background-position: 0% 0%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            animation: chromeFlow 12s ease-in-out infinite, 
+                       letterGleam 12s ease-in-out infinite;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.25),
+                        0 0 12px rgba(255, 255, 255, 0.15),
+                        0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo::after {
+            content: 'POPOLOGY';
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                transparent 40%,
+                rgba(255, 255, 255, 0.8) 48%,
+                rgba(255, 255, 255, 1) 50%,
+                rgba(255, 255, 255, 0.8) 52%,
+                transparent 60%,
+                transparent 100%);
+            background-size: 250% 100%;
+            background-position: -150% 0;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            animation: bladeGleam 10s linear infinite;
+            transform: skewX(-15deg);
+            transform-origin: center;
+        }
+        
+        @keyframes chromeFlow {
+            0%, 100% {
+                background-position: 0% 0%;
+            }
+            50% {
+                background-position: 100% 0%;
+            }
+        }
+        
+        @keyframes bladeGleam {
+            0%, 30% {
+                background-position: 150% 0;
+                opacity: 0;
+            }
+            31% {
+                opacity: 1;
+            }
+            60% {
+                background-position: -150% 0;
+                opacity: 1;
+            }
+            61%, 100% {
+                background-position: -150% 0;
+                opacity: 0;
+            }
+        }
+        
+
+        .logo:hover {
+            transform: translateY(-1px);
+            text-shadow: 0 0 14px rgba(255, 255, 255, 0.72),
+                        0 0 28px rgba(255, 255, 255, 0.54),
+                        0 0 42px rgba(255, 255, 255, 0.36),
+                        0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: chromeFlow 12s ease-in-out infinite;
+        }
+
+        .search-container {
+            flex: 0 1 320px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 400;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 44px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .eth-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            height: 50px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .eth-display:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* ETH Dropdown with Liquid Glass Effect */
+        .eth-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: -100px;
+            width: 320px;
+            background: linear-gradient(135deg, 
+                rgba(43, 51, 65, 0.85) 0%, 
+                rgba(31, 38, 51, 0.85) 100%);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.6),
+                0 16px 32px rgba(0, 0, 0, 0.4),
+                inset 0 2px 2px rgba(255, 255, 255, 0.1),
+                inset 0 -2px 2px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(30px) saturate(1.5);
+            -webkit-backdrop-filter: blur(30px) saturate(1.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow: hidden;
+        }
+        
+        .eth-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        
+        /* Liquid glass shimmer effect */
+        .eth-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(255, 255, 255, 0.15) 0%,
+                rgba(255, 255, 255, 0.05) 30%,
+                transparent 70%
+            );
+            animation: liquidShimmer 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes liquidShimmer {
+            0%, 100% { transform: translate(-30%, -30%) rotate(0deg); }
+            33% { transform: translate(30%, -30%) rotate(120deg); }
+            66% { transform: translate(-30%, 30%) rotate(240deg); }
+        }
+        
+        /* Glass edge highlight */
+        .eth-dropdown::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(255, 255, 255, 0.1) 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.1) 75%, 
+                rgba(255, 255, 255, 0.2) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: exclude;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        
+        /* Arrow pointer */
+        .eth-dropdown-arrow {
+            position: absolute;
+            top: -8px;
+            right: 128px;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, 
+                rgba(43, 51, 65, 0.95) 0%, 
+                rgba(31, 38, 51, 0.95) 100%);
+            transform: rotate(45deg);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(30px);
+        }
+        
+        .balance-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+        
+        .balance-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+        
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .balance-row:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(2px);
+        }
+        
+        .balance-title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+        
+        .balance-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .balance-value.total {
+            background: linear-gradient(135deg, #4ADE80 0%, #22C55E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .balance-value.today {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .token-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #818CF8 0%, #6366F1 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+        }
+        
+        .activity-section {
+            margin-top: 20px;
+        }
+        
+        .activity-title {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            margin-bottom: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .activity-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .brand-icon.pepsi {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+        
+        .brand-icon.mcdonalds {
+            background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+        }
+        
+        .brand-icon.pg {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+        }
+        
+        .brand-name {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+        }
+        
+        .activity-amount {
+            font-size: 14px;
+            color: #4ADE80;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .eth-icon {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #627EEA 0%, #3F51B5 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .notification-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .notification-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.05);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Combined Profile and Menu Container */
+        .profile-menu-combined {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px 5px 5px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 50px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-menu-combined:hover {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-avatar-small {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-image: url('./stuff/face 1.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .menu-icon {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 18px;
+        }
+        
+        .menu-line {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Video Section - Direct placement */
+        .video-section {
+            width: 100%;
+            position: relative;
+            height: 580px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 66px;
+        }
+        
+        /* Removed glass overlays - using alpha mask instead */
+
+        .video-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            display: none;
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            object-fit: contain;
+            pointer-events: none;
+            outline: none;
+            border-radius: 16px;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 23px 60px rgba(0, 0, 0, 0.6))
+                    drop-shadow(0 15px 38px rgba(0, 0, 0, 0.45))
+                    drop-shadow(0 8px 23px rgba(0, 0, 0, 0.3));
+        }
+        
+        .video-player::-webkit-media-controls {
+            display: none !important;
+        }
+        
+        .video-player::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+        
+        .video-player::-webkit-media-controls-panel {
+            display: none !important;
+        }
+        
+        .video-player::-moz-media-controls {
+            display: none !important;
+        }
+        
+        .video-player::-ms-media-controls {
+            display: none !important;
+        }
+        
+        /* Content below video */
+        .content-wrapper {
+            display: flex;
+            gap: 0;
+            padding: 0 66px 32px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        /* Removed vertical divider line */
+
+        .left-section {
+            flex: 1;
+            max-width: calc(100% - 288px);
+            padding-right: 0;
+        }
+
+        /* Info Section - Floating below video */
+        .info-section {
+            background: transparent;
+            padding: 12px 0;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .info-section::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: calc(288px + 20px); /* Stop at start of Now Playing column */
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 0;
+        }
+
+        .podcast-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .stats {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            align-items: center;
+            margin-left: 8px;
+        }
+        
+        .stats span:first-child {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .stats span:last-child {
+            margin-left: 4px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Social Interaction Button Bar - Pixel Perfect Implementation */
+        .social-interaction-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            justify-content: flex-end;
+        }
+
+        .social-button {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            height: 32px;
+            position: relative;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transform: scale(0.9);
+        }
+
+        .social-button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Like Button */
+        .social-button.like-btn {
+            padding-right: 14px;
+        }
+
+        .social-button.like-btn .icon {
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            transition: color 0.2s ease;
+        }
+
+        .social-button.like-btn.liked .icon {
+            color: #ff4458;
+        }
+
+        .social-button.like-btn.liked svg {
+            fill: #ff4458;
+        }
+
+        .social-button.like-btn .text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        /* Share Button */
+        .social-button.share-btn {
+            padding: 6px 12px;
+        }
+
+        .social-button.share-btn .icon {
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Save Button */
+        .social-button.save-btn {
+            padding: 6px 12px;
+        }
+
+        .social-button.save-btn .icon {
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-button.save-btn.saved .icon svg {
+            fill: currentColor;
+        }
+
+        /* Menu Button (Three Dots) */
+        .social-button.menu-btn {
+            padding: 6px 10px;
+            min-width: auto;
+        }
+
+        .social-button.menu-btn .dots {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .social-button.menu-btn .dot {
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 50%;
+            transition: background 0.2s ease;
+        }
+
+        .social-button.menu-btn:hover .dot {
+            background: rgba(255, 255, 255, 1);
+        }
+
+        /* Icon styling for consistency */
+        .social-button svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            transition: all 0.2s ease;
+        }
+
+        /* Hover effects for individual buttons */
+        .social-button.like-btn:hover:not(.liked) .icon {
+            color: #ff6b7d;
+        }
+
+        .social-button.share-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .social-button.save-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .social-button.menu-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* User Section - Glass card */
+        .user-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .user-followers {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .follow-btn {
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #00A6FB 0%, #0582CA 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 
+                0 0 20px rgba(0, 166, 251, 0.5),
+                0 0 40px rgba(0, 166, 251, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 0 20px rgba(0, 166, 251, 0.5),
+                    0 0 40px rgba(0, 166, 251, 0.3),
+                    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    0 0 30px rgba(0, 166, 251, 0.7),
+                    0 0 60px rgba(0, 166, 251, 0.4),
+                    inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        .follow-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 
+                0 0 30px rgba(0, 166, 251, 0.8),
+                0 0 60px rgba(0, 166, 251, 0.5),
+                0 10px 20px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.5);
+            animation: none;
+        }
+        
+        .follow-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .follow-btn:hover::before {
+            opacity: 1;
+        }
+
+        .follow-btn.following {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: none;
+            animation: none;
+        }
+
+        /* Description */
+        .description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+        }
+
+        /* Tags and Social */
+        .tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tag:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: white;
+        }
+
+        .social-btn.facebook {
+            background: linear-gradient(135deg, #1877F2 0%, #0C63D4 100%);
+        }
+
+        .social-btn.instagram {
+            background: linear-gradient(135deg, #E4405F 0%, #C13584 50%, #FD1D1D 100%);
+        }
+
+        .social-btn.linkedin {
+            background: linear-gradient(135deg, #0077B5 0%, #005885 100%);
+        }
+
+        .social-btn.twitter {
+            background: #000;
+            color: white;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Brand Section */
+        .brand-section {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .brand-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .brands {
+            display: flex;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .brand-icon.brand-pepsi {
+            background: linear-gradient(135deg, #004B93 0%, #DA291C 100%);
+        }
+
+        .brand-icon.brand-mcdonalds {
+            background: linear-gradient(135deg, #FFC72C 0%, #DA291C 100%);
+        }
+
+        .brand-icon.brand-pg {
+            background: linear-gradient(135deg, #003DA5 0%, #0066CC 100%);
+        }
+
+        .brand-icon.brand-nasa {
+            background: linear-gradient(135deg, #0B3D91 0%, #FC3D21 100%);
+        }
+
+        .brand-icon:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            width: 288px;
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .sidebar-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Now Playing - Floating without card background */
+        .sidebar-card.now-playing-section {
+            background: transparent;
+            backdrop-filter: none;
+            border: none;
+            padding: 0;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: white;
+        }
+        
+        /* Larger font for Now Playing title */
+        .now-playing-section .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .now-playing-video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .now-playing-video img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .now-playing-video:hover .play-overlay,
+        .up-next-item:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #FF0000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .play-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .video-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .video-channel {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .up-next-item {
+            position: relative;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .up-next-item:hover {
+            transform: scale(1.02) translateY(-2px);
+        }
+
+        .up-next-thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.3s ease;
+        }
+        
+        .up-next-thumbnail::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.7) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .up-next-item:hover .up-next-thumbnail::before {
+            opacity: 1;
+        }
+        
+        .up-next-thumbnail.mountains {
+            background-image: url('./stuff/next%20vid.png');
+        }
+
+        .up-next-info {
+            margin-top: 12px;
+        }
+
+        .up-next-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            transition: color 0.2s ease;
+        }
+        
+        .up-next-item:hover .up-next-title {
+            color: #00A6FB;
+        }
+
+        .up-next-channel {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .platform-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        
+        .up-next-item:hover .platform-badge {
+            transform: scale(1.05);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .platform-badge.pepsi {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .platform-badge .brand-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            background-image: url('./stuff/brands/pepsi.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .platform-badge .token-amount {
+            color: #4ADE80;
+            font-weight: 700;
+        }
+
+        .platform-badge.facebook {
+            background: rgba(24, 119, 242, 0.2);
+            color: #1877F2;
+        }
+
+        /* Similar POPcasts */
+        .similar-section {
+            margin-top: 32px;
+        }
+
+        .similar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .similar-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .view-all-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .similar-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .similar-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .similar-thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .similar-info {
+            padding: 12px;
+        }
+
+        .similar-card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .similar-card-channel {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Liquid Glass Profile Component */
+        .glass-profile-container {
+            position: relative;
+            padding: 60px 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 600px;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 30%, #24243e 60%, #0f0c29 100%);
+            overflow: hidden;
+        }
+
+        /* Animated liquid orbs in background */
+        .glass-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.6;
+            animation: floatOrb 20s ease-in-out infinite;
+        }
+
+        .glass-orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            animation-duration: 25s;
+        }
+
+        .glass-orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, transparent 70%);
+            bottom: -150px;
+            right: -150px;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        .glass-orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.5) 0%, transparent 70%);
+            top: 50%;
+            left: 30%;
+            animation-duration: 35s;
+            animation-delay: -10s;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(100px, -50px) scale(1.1);
+            }
+            50% {
+                transform: translate(-50px, 100px) scale(0.9);
+            }
+            75% {
+                transform: translate(50px, 50px) scale(1.05);
+            }
+        }
+
+        /* Main glass card */
+        .glass-profile-card {
+            position: relative;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 26px;
+            border: none;
+            padding: 32px;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.08),
+                inset 0 1px 1px rgba(255, 255, 255, 0.02),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.04);
+            animation: floatCard 6s ease-in-out infinite;
+            overflow: hidden;
+            transform: scale(0.9);
+            transform-origin: top left;
+        }
+
+        @keyframes floatCard {
+            0%, 100% {
+                transform: translateY(0) scale(0.9);
+            }
+            50% {
+                transform: translateY(-10px) scale(0.9);
+            }
+        }
+
+        /* Removed glass shimmer effect - no gleam */
+        .glass-profile-card::before {
+            display: none;
+        }
+
+        /* Profile header section */
+        .glass-profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-profile-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .glass-profile-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-image: url('./stuff/randy%201.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.6);
+            }
+        }
+
+        .glass-profile-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .glass-profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-profile-followers {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .glass-follow-button {
+            padding: 11px 20px;
+            background: linear-gradient(135deg, #2a5598 0%, #3a6ba8 50%, #4a89b8 100%);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            margin-left: 12px;
+            overflow: hidden !important;
+            contain: layout style paint;
+            box-shadow: 
+                0 0 12px rgba(113, 205, 226, 0.21),
+                0 0 21px rgba(91, 185, 216, 0.15),
+                0 0 30px rgba(71, 165, 196, 0.12),
+                0 0 38px rgba(51, 135, 176, 0.09),
+                0 0 48px rgba(18, 51, 128, 0.06),
+                inset 0 0 15px rgba(255, 255, 255, 0.12);
+            /* animation: disabled to fix floating rectangle issue */
+        }
+        
+        .glass-follow-button::before {
+            display: none;
+        }
+        
+        @keyframes morphGradient {
+            0%, 100% {
+                background-position: -30% 20%, 130% 80%, 10% 120%, 110% -20%, 50% 50%, -40% 60%, 0% 0%;
+                background-size: 250% 250%, 200% 200%, 220% 220%, 180% 180%, 300% 300%, 240% 240%, 100% 100%;
+            }
+            16.67% {
+                background-position: 20% 60%, 80% 40%, 60% 90%, 90% 30%, 40% 60%, 20% 30%, 0% 0%;
+                background-size: 270% 270%, 180% 180%, 240% 240%, 160% 160%, 280% 280%, 220% 220%, 100% 100%;
+            }
+            33.33% {
+                background-position: 70% 30%, 30% 70%, 90% 50%, 60% 80%, 55% 45%, 80% 10%, 0% 0%;
+                background-size: 230% 230%, 210% 210%, 200% 200%, 190% 190%, 310% 310%, 250% 250%, 100% 100%;
+            }
+            50% {
+                background-position: 40% 90%, 60% 10%, 30% 60%, 40% 40%, 45% 55%, 50% 90%, 0% 0%;
+                background-size: 260% 260%, 190% 190%, 230% 230%, 170% 170%, 290% 290%, 230% 230%, 100% 100%;
+            }
+            66.67% {
+                background-position: 10% 40%, 90% 60%, 50% 30%, 20% 90%, 60% 40%, 10% 50%, 0% 0%;
+                background-size: 240% 240%, 210% 210%, 210% 210%, 200% 200%, 320% 320%, 260% 260%, 100% 100%;
+            }
+            83.33% {
+                background-position: 50% 10%, 40% 90%, 80% 70%, 70% 10%, 35% 65%, 60% 20%, 0% 0%;
+                background-size: 255% 255%, 195% 195%, 225% 225%, 175% 175%, 295% 295%, 235% 235%, 100% 100%;
+            }
+        }
+        
+        @keyframes noiseMove {
+            0%, 100% {
+                transform: translate(0%, 0%) scale(1);
+            }
+            33% {
+                transform: translate(-20%, 20%) scale(1.1);
+            }
+            66% {
+                transform: translate(20%, -20%) scale(0.9);
+            }
+        }
+        
+        @keyframes glowPulseSlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 12px rgba(113, 205, 226, 0.21),
+                    0 0 21px rgba(91, 185, 216, 0.15),
+                    0 0 30px rgba(71, 165, 196, 0.12),
+                    0 0 38px rgba(51, 135, 176, 0.09),
+                    0 0 48px rgba(18, 51, 128, 0.06),
+                    inset 0 0 15px rgba(255, 255, 255, 0.12);
+            }
+            50% {
+                box-shadow: 
+                    0 0 15px rgba(113, 205, 226, 0.27),
+                    0 0 24px rgba(96, 190, 221, 0.21),
+                    0 0 32px rgba(76, 170, 201, 0.15),
+                    0 0 42px rgba(56, 150, 181, 0.12),
+                    0 0 51px rgba(28, 71, 148, 0.09),
+                    inset 0 0 20px rgba(255, 255, 255, 0.18);
+            }
+        }
+        
+        @keyframes borderTrace {
+            0%, 90% {
+                border-color: transparent;
+            }
+            91%, 94% {
+                border-color: rgba(113, 205, 226, 0.8);
+            }
+            95%, 100% {
+                border-color: transparent;
+            }
+        }
+
+        .glass-follow-button::after {
+            display: none;
+        }
+        
+        .glass-follow-button:active::after {
+            display: none;
+        }
+
+        .glass-follow-button:hover {
+            transform: translateY(-2px) scale(1.08);
+            box-shadow: 
+                0 0 21px rgba(113, 205, 226, 0.35),
+                0 0 32px rgba(101, 195, 221, 0.28),
+                0 0 42px rgba(81, 175, 206, 0.21),
+                0 0 53px rgba(61, 155, 186, 0.18),
+                0 0 63px rgba(38, 91, 158, 0.14),
+                0 15px 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 25px rgba(255, 255, 255, 0.2);
+            /* animation: disabled to fix floating rectangle issue */
+        }
+
+        .glass-follow-button.following {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: none;
+            animation: none;
+        }
+
+        /* Bio section */
+        .glass-profile-bio {
+            margin-bottom: 24px;
+            padding: 0;
+            background: transparent;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-profile-bio p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+
+        /* Category pills */
+        .glass-profile-categories {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-category-pill {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-category-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .glass-category-pill:hover::before {
+            left: 100%;
+        }
+
+        .glass-category-pill:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Social icons */
+        .glass-profile-social {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-social-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+            position: relative;
+            border: 1.5px solid rgba(0, 166, 251, 0.5);
+            background: rgba(52, 58, 64, 0.9);
+        }
+
+        .glass-social-icon.facebook {
+            background: linear-gradient(135deg, rgba(24, 119, 242, 0.15) 0%, rgba(12, 99, 212, 0.15) 100%);
+            border-color: #1877f2;
+            color: #1877f2;
+        }
+
+        .glass-social-icon.instagram {
+            background: linear-gradient(135deg, rgba(0, 141, 213, 0.15) 0%, rgba(0, 124, 196, 0.15) 100%);
+            border-color: #008DD5;
+            color: #008DD5;
+        }
+
+        .glass-social-icon.linkedin {
+            background: linear-gradient(135deg, rgba(0, 119, 181, 0.15) 0%, rgba(0, 88, 133, 0.15) 100%);
+            border-color: #0077b5;
+            color: #0077b5;
+        }
+
+        .glass-social-icon.twitter {
+            background: linear-gradient(135deg, rgba(29, 161, 242, 0.15) 0%, rgba(26, 145, 218, 0.15) 100%);
+            border-color: #1DA1F2;
+            color: #1DA1F2;
+        }
+
+        .glass-social-icon:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 166, 251, 0.3);
+            border-width: 2px;
+        }
+
+        .glass-social-icon.facebook:hover {
+            background: linear-gradient(135deg, rgba(24, 119, 242, 0.25) 0%, rgba(12, 99, 212, 0.25) 100%);
+            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4);
+        }
+
+        .glass-social-icon.instagram:hover {
+            background: linear-gradient(135deg, rgba(0, 141, 213, 0.25) 0%, rgba(0, 124, 196, 0.25) 100%);
+            box-shadow: 0 4px 12px rgba(0, 141, 213, 0.4);
+        }
+
+        .glass-social-icon.linkedin:hover {
+            background: linear-gradient(135deg, rgba(0, 119, 181, 0.25) 0%, rgba(0, 88, 133, 0.25) 100%);
+            box-shadow: 0 4px 12px rgba(0, 119, 181, 0.4);
+        }
+
+        /* Brands section */
+        .glass-profile-brands {
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-profile-brands {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .glass-brands-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .glass-brands-grid {
+            display: flex;
+            gap: 12px;
+        }
+
+        .glass-brand-tile {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-brand-tile::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 40%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 60%
+            );
+            transform: rotate(45deg);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+
+        .glass-brand-tile:hover::before {
+            animation: brandShine 0.5s ease;
+        }
+
+        @keyframes brandShine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: rotate(45deg) translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .glass-brand-tile.pepsi {
+            background-image: url('./stuff/brands/pepsiii.jpg');
+        }
+
+        .glass-brand-tile.mcdonalds {
+            background-image: url('./stuff/brands/McDonalds-Logo%202.png');
+        }
+
+        .glass-brand-tile.pg {
+            background-image: url('./stuff/brands/png.png');
+        }
+
+        .glass-brand-tile.nasa {
+            background-image: url('./stuff/brands/nasa.jpeg');
+        }
+
+        .glass-brand-tile:hover {
+            transform: translateY(-4px) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Lightbox Overlay */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .lightbox-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .lightbox-modal {
+            position: relative;
+            width: 480px;
+            padding: 3px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 24px;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .lightbox-overlay.active .lightbox-modal {
+            transform: scale(1) translateY(0);
+        }
+        
+        .lightbox-inner {
+            background: rgba(25, 30, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 21px;
+            padding: 40px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 25px 60px rgba(0, 0, 0, 0.5),
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .lightbox-inner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                transparent 100%);
+            border-radius: 21px 21px 0 0;
+            pointer-events: none;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.1);
+        }
+        
+        .lightbox-close::before,
+        .lightbox-close::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+        }
+        
+        .lightbox-close::before {
+            transform: rotate(45deg);
+        }
+        
+        .lightbox-close::after {
+            transform: rotate(-45deg);
+        }
+        
+        .lightbox-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #4a89b8 0%, #71cde2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes iconPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(113, 205, 226, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 20px rgba(113, 205, 226, 0);
+            }
+        }
+        
+        .lightbox-icon::after {
+            content: '▶';
+            color: white;
+            font-size: 28px;
+            margin-left: 4px;
+        }
+        
+        .lightbox-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        
+        .lightbox-message {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        
+        .lightbox-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4a89b8 0%, #71cde2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 15px rgba(113, 205, 226, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .lightbox-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px rgba(113, 205, 226, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .lightbox-button:active {
+            transform: translateY(0);
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 360px;
+            background: rgba(25, 30, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 0;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 10px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+        
+        .notification-dropdown.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+        
+        .notification-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .notification-badge {
+            background: linear-gradient(135deg, #4a89b8 0%, #71cde2 100%);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .notification-item {
+            padding: 12px 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        
+        .notification-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+        
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 280px;
+            background: rgba(25, 30, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 0;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 10px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+        
+        .profile-dropdown.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+        
+        .profile-dropdown-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .profile-dropdown-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .profile-dropdown-info {
+            flex: 1;
+        }
+        
+        .profile-dropdown-name {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .profile-dropdown-email {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+        
+        .profile-dropdown-menu {
+            padding: 8px 0;
+        }
+        
+        .profile-menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+        
+        .profile-menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .profile-menu-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .profile-menu-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 8px 0;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1280px) {
+            .right-sidebar {
+                width: 240px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .right-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 22px;
+            }
+            
+            .search-container {
+                display: none;
+            }
+            
+            .content-wrapper {
+                padding: 22px;
+            }
+            
+            .similar-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        function PopologyApp() {
+            const [isFollowing, setIsFollowing] = useState(false);
+            const [likes, setLikes] = useState(2400);
+            const [isLiked, setIsLiked] = useState(false);
+            const [isSaved, setIsSaved] = useState(false);
+            const [showEthDropdown, setShowEthDropdown] = useState(false);
+            const [showLightbox, setShowLightbox] = useState(false);
+            const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+            const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+            const ethDropdownRef = useRef(null);
+            const notificationDropdownRef = useRef(null);
+            const profileDropdownRef = useRef(null);
+            
+            // Close dropdown when clicking outside
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (ethDropdownRef.current && !ethDropdownRef.current.contains(event.target)) {
+                        setShowEthDropdown(false);
+                    }
+                    if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(event.target)) {
+                        setShowNotificationDropdown(false);
+                    }
+                    if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+                        setShowProfileDropdown(false);
+                    }
+                };
+                
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => {
+                    document.removeEventListener('mousedown', handleClickOutside);
+                };
+            }, []);
+            const handleFollow = () => {
+                setIsFollowing(!isFollowing);
+            };
+            const handleLike = () => {
+                if (isLiked) {
+                    setLikes(likes - 1);
+                } else {
+                    setLikes(likes + 1);
+                }
+                setIsLiked(!isLiked);
+            };
+            const handleSave = () => {
+                setIsSaved(!isSaved);
+            };
+            const handleShare = () => {
+                // Copy link to clipboard
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+            };
+            return (
+                <div className="app-container">
+                    {/* Background with blur */}
+                    <div className="background-smoke">
+                        <div className="background-image"></div>
+                    </div>
+                    
+                    {/* Header */}
+                    <header className="header">
+                        <div className="header-left">
+                            <div className="logo">POPOLOGY</div>
+                            <div className="search-container">
+                                <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                                <input 
+                                    type="text" 
+                                    className="search-input" 
+                                    placeholder="Search" 
+                                />
+                            </div>
+                        </div>
+                        <div className="header-right">
+                            <div 
+                                className="eth-display" 
+                                onClick={() => setShowEthDropdown(!showEthDropdown)}
+                                ref={ethDropdownRef}
+                            >
+                                <div className="eth-icon">Ξ</div>
+                                <span>0.0007 ETH</span>
+                                
+                                {/* ETH Dropdown */}
+                                <div className={`eth-dropdown ${showEthDropdown ? 'active' : ''}`}>
+                                    <div className="eth-dropdown-arrow"></div>
+                                    
+                                    <div className="balance-section">
+                                        <div className="balance-label">Token Balance</div>
+                                        <div className="balance-row">
+                                            <span className="balance-title">Total</span>
+                                            <span className="balance-value total">
+                                                <span className="token-icon">T</span>
+                                                +23.5 token
+                                            </span>
+                                        </div>
+                                        <div className="balance-row">
+                                            <span className="balance-title">Today</span>
+                                            <span className="balance-value today">
+                                                <span className="token-icon">T</span>
+                                                +0.5 token
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="activity-section">
+                                        <div className="activity-title">Recent activity</div>
+                                        <div className="activity-item">
+                                            <div className="activity-brand">
+                                                <div className="brand-icon pepsi">P</div>
+                                                <span className="brand-name">Pepsi</span>
+                                            </div>
+                                            <span className="activity-amount">+0.2 token</span>
+                                        </div>
+                                        <div className="activity-item">
+                                            <div className="activity-brand">
+                                                <div className="brand-icon mcdonalds">M</div>
+                                                <span className="brand-name">McDonald's</span>
+                                            </div>
+                                            <span className="activity-amount">+0.2 token</span>
+                                        </div>
+                                        <div className="activity-item">
+                                            <div className="activity-brand">
+                                                <div className="brand-icon pg">P&G</div>
+                                                <span className="brand-name">P&G</span>
+                                            </div>
+                                            <span className="activity-amount">+0.2 token</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{position: 'relative'}} ref={notificationDropdownRef}>
+                                <button className="notification-btn" onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round"></path>
+                                    </svg>
+                                </button>
+                                
+                                {/* Notification Dropdown */}
+                                <div className={`notification-dropdown ${showNotificationDropdown ? 'active' : ''}`}>
+                                    <div className="notification-header">
+                                        <div className="notification-title">Notifications</div>
+                                        <div className="notification-badge">3 new</div>
+                                    </div>
+                                    
+                                    <div className="notification-list">
+                                        <div className="notification-item unread">
+                                            <div className="notification-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                                </svg>
+                                            </div>
+                                            <div className="notification-content">
+                                                <div className="notification-text">John Doe liked your popcast</div>
+                                                <div className="notification-time">2 minutes ago</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="notification-item unread">
+                                            <div className="notification-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                                                </svg>
+                                            </div>
+                                            <div className="notification-content">
+                                                <div className="notification-text">New comment on your post</div>
+                                                <div className="notification-time">15 minutes ago</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="notification-item unread">
+                                            <div className="notification-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div className="notification-content">
+                                                <div className="notification-text">Your popcast was verified</div>
+                                                <div className="notification-time">1 hour ago</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="notification-item">
+                                            <div className="notification-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <div className="notification-content">
+                                                <div className="notification-text">Sarah bookmarked your collection</div>
+                                                <div className="notification-time">3 hours ago</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="notification-footer">
+                                        <a href="#" className="view-all-notifications">View all notifications</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style={{position: 'relative'}} ref={profileDropdownRef}>
+                                <div className="profile-menu-combined" onClick={() => setShowProfileDropdown(!showProfileDropdown)} style={{cursor: 'pointer'}}>
+                                    <div className="profile-avatar-small"></div>
+                                    <div className="menu-icon">
+                                        <div className="menu-line"></div>
+                                        <div className="menu-line"></div>
+                                        <div className="menu-line"></div>
+                                    </div>
+                                </div>
+                                
+                                {/* Profile Dropdown */}
+                                <div className={`profile-dropdown ${showProfileDropdown ? 'active' : ''}`}>
+                                    <div className="profile-dropdown-header">
+                                        <div className="profile-avatar-large"></div>
+                                        <div className="profile-info">
+                                            <div className="profile-name">Guest User</div>
+                                            <div className="profile-email">guest@popology.com</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="profile-menu-section">
+                                        <a href="#" className="profile-menu-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
+                                            </svg>
+                                            <span>My Profile</span>
+                                        </a>
+                                        
+                                        <a href="#" className="profile-menu-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                                <path d="M12 1v6m0 6v6m4.22-13.22l4.24 4.24M1.54 1.54l4.24 4.24M19.46 19.46l4.24 4.24M1.54 19.46l4.24-4.24"></path>
+                                            </svg>
+                                            <span>Settings</span>
+                                        </a>
+                                        
+                                        <a href="#" className="profile-menu-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                            </svg>
+                                            <span>My Collections</span>
+                                        </a>
+                                        
+                                        <a href="#" className="profile-menu-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                <polyline points="10 9 9 9 8 9"></polyline>
+                                            </svg>
+                                            <span>My Popcasts</span>
+                                        </a>
+                                    </div>
+                                    
+                                    <div className="profile-menu-divider"></div>
+                                    
+                                    <div className="profile-menu-section">
+                                        <a href="#" className="profile-menu-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                            </svg>
+                                            <span>Help & Support</span>
+                                        </a>
+                                        
+                                        <a href="#" className="profile-menu-item logout">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                                <polyline points="16 17 21 12 16 7"></polyline>
+                                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                                            </svg>
+                                            <span>Log Out</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    {/* Main Content */}
+                    <div className="main-content">
+                        {/* Video Section - Direct placement with transparency */}
+                        <div className="video-section">
+                            <video 
+                                className="video-player"
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                            >
+                                {/* Detect OS and serve appropriate format */}
+                                {navigator.platform.includes('Mac') ? (
+                                    <source src="./stuff/cast%203.mp4" type="video/mp4; codecs=hvc1" />
+                                ) : (
+                                    <source src="./stuff/webm%20video%202.webm" type="video/webm" />
+                                )}
+                                {/* Fallback for compatibility */}
+                                <source src="./stuff/cast%203.mp4" type="video/mp4" />
+                                <source src="./stuff/webm%20video%202.webm" type="video/webm" />
+                            </video>
+                        </div>
+                        
+                        {/* Info Section - Floating below video */}
+                        <div className="info-section" style={{padding: '12px 66px', position: 'relative'}}>
+                            <div className="title-row">
+                                <h1 className="podcast-title">Randy's 1st POPcast®</h1>
+                                <div className="stats">
+                                    <span>•</span>
+                                    <span>132,757 views</span>
+                                    <span>•</span>
+                                    <span>2:22</span>
+                                </div>
+                            </div>
+                            {/* Social Interaction Button Bar - Moved to far right under video */}
+                            <div className="social-interaction-bar" style={{position: 'absolute', right: '66px', top: '12px'}}>
+                                    <button 
+                                        className={`social-button like-btn ${isLiked ? 'liked' : ''}`} 
+                                        onClick={handleLike}
+                                    >
+                                        <span className="icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill={isLiked ? "currentColor" : "none"}></path>
+                                            </svg>
+                                        </span>
+                                        <span className="text">{likes >= 1000 ? `${(likes / 1000).toFixed(1)}K` : likes} Likes</span>
+                                    </button>
+                                    
+                                    <button 
+                                        className="social-button share-btn" 
+                                        onClick={() => setShowLightbox(true)}
+                                    >
+                                        <span className="icon">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                                <polyline points="16 6 12 2 8 6"></polyline>
+                                                <line x1="12" y1="2" x2="12" y2="15"></line>
+                                            </svg>
+                                        </span>
+                                        <span className="text">Share</span>
+                                    </button>
+                                    
+                                    <button 
+                                        className={`social-button save-btn ${isSaved ? 'saved' : ''}`}
+                                        onClick={() => setShowLightbox(true)}
+                                    >
+                                        <span className="icon">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                                            </svg>
+                                        </span>
+                                        <span className="text">Save</span>
+                                    </button>
+                                    
+                                    <button className="social-button menu-btn" onClick={() => setShowLightbox(true)}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="5" r="1.5" fill="rgba(255, 255, 255, 0.85)"></circle>
+                                            <circle cx="12" cy="12" r="1.5" fill="rgba(255, 255, 255, 0.85)"></circle>
+                                            <circle cx="12" cy="19" r="1.5" fill="rgba(255, 255, 255, 0.85)"></circle>
+                                        </svg>
+                                    </button>
+                            </div>
+                        </div>
+                        
+                        {/* Content Wrapper */}
+                        <div className="content-wrapper">
+                            {/* Left Section */}
+                            <div className="left-section">
+                                {/* Liquid Glass Profile Component */}
+                                <div className="glass-profile-card" style={{maxWidth: 'none', animation: 'none', marginTop: '24px'}}>
+                                    {/* Profile header */}
+                                    <div className="glass-profile-header">
+                                        <div className="glass-profile-info" style={{width: '100%'}}>
+                                            <div className="glass-profile-avatar"></div>
+                                            <div className="glass-profile-details" style={{flex: 1}}>
+                                                <div style={{display: 'flex', alignItems: 'center', width: '100%', position: 'relative'}}>
+                                                    <div className="glass-profile-name">Randy Bowden Jr.</div>
+                                                    <button 
+                                                        className={`glass-follow-button ${isFollowing ? 'following' : ''}`}
+                                                        onClick={() => setShowLightbox(true)}
+                                                        style={{marginLeft: '16px', position: 'static', transform: 'none'}}
+                                                    >
+                                                        {isFollowing ? 'Following' : 'Follow'}
+                                                    </button>
+                                                    <div className="glass-profile-social" style={{marginLeft: 'auto', marginRight: '30px'}}>
+                                                        <div className="glass-social-icon facebook" onClick={() => setShowLightbox(true)}>f</div>
+                                                        <div className="glass-social-icon instagram" onClick={() => setShowLightbox(true)}>
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#008DD5" strokeWidth="2">
+                                                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                                            </svg>
+                                                        </div>
+                                                        <div className="glass-social-icon linkedin" onClick={() => setShowLightbox(true)}>in</div>
+                                                        <div className="glass-social-icon twitter" onClick={() => setShowLightbox(true)}>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#1DA1F2">
+                                                                <path d="M4 4l11.733 16h4.267l-11.733-16zM4 20l6.768-6.768m2.46-2.46l6.768-6.768"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="glass-profile-followers">
+                                                    1.2K followers
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Bio */}
+                                    <div className="glass-profile-bio">
+                                        <p>
+                                            Randy Bowden Jr. is a real Fashionista POPOLOGIST®. He drives the coolest 
+                                            cars and wears the nicest threads. Look for him with his family outings.
+                                        </p>
+                                    </div>
+                                    
+                                    {/* Categories */}
+                                    <div className="glass-profile-categories">
+                                        <div className="glass-category-pill" onClick={() => setShowLightbox(true)}>Sport</div>
+                                        <div className="glass-category-pill" onClick={() => setShowLightbox(true)}>Hiking</div>
+                                        <div className="glass-category-pill" onClick={() => setShowLightbox(true)}>Camping</div>
+                                        <div className="glass-category-pill" onClick={() => setShowLightbox(true)}>Wild Nature</div>
+                                    </div>
+                                    
+                                    {/* Brands */}
+                                    <div className="glass-profile-brands">
+                                        <div className="glass-brands-label">Brands:</div>
+                                        <div className="glass-brands-grid">
+                                            <div className="glass-brand-tile pepsi"></div>
+                                            <div className="glass-brand-tile mcdonalds"></div>
+                                            <div className="glass-brand-tile pg"></div>
+                                            <div className="glass-brand-tile nasa"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Sidebar */}
+                            <div className="right-sidebar">
+                                {/* Now Playing */}
+                                <div className="sidebar-card now-playing-section" onClick={() => setShowLightbox(true)} style={{cursor: 'pointer'}}>
+                                    <div className="sidebar-title">Now playing</div>
+                                    <div className="now-playing-video">
+                                        <img src="./stuff/now%20playing%201.png" alt="Randy Bowden Jr - Fashion & Skin Care" />
+                                        <div className="play-overlay">
+                                            <div className="play-icon">▶</div>
+                                        </div>
+                                    </div>
+                                    <div className="video-title">Why Boats and Planes Are Also Going Electric</div>
+                                    <div className="video-channel">Youtube</div>
+                                </div>
+                                {/* Up Next - No card background */}
+                                <div style={{marginTop: '32px'}}>
+                                    <div className="sidebar-title" style={{fontSize: '24px', fontWeight: '600', marginBottom: '20px'}}>Up Next</div>
+                                    
+                                    {/* First Up Next Item */}
+                                    <div className="up-next-item" onClick={() => setShowLightbox(true)} style={{cursor: 'pointer'}}>
+                                        {/* Platform badge above thumbnail */}
+                                        <div className="platform-badge pepsi" style={{
+                                            position: 'relative',
+                                            top: 'auto',
+                                            left: 'auto',
+                                            marginBottom: '8px',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            borderRadius: '8px',
+                                            padding: '7px 11px',
+                                            background: 'rgba(20, 28, 38, 0.95)',
+                                            backdropFilter: 'blur(20px)',
+                                            border: '1px solid rgba(255, 255, 255, 0.15)'
+                                        }}>
+                                            <div style={{
+                                                width: '25px',
+                                                height: '25px',
+                                                borderRadius: '50%',
+                                                overflow: 'hidden',
+                                                marginRight: '7px',
+                                                background: 'white',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0
+                                            }}>
+                                                <img src="./stuff/brands/pepsiii.jpg" 
+                                                     style={{width: 'auto', height: '70%', maxWidth: '70%', objectFit: 'contain'}} />
+                                            </div>
+                                            <span style={{fontSize: '13px', fontWeight: '600', color: 'white', marginRight: '11px'}}>Pepsi</span>
+                                            <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                                                <div style={{
+                                                    width: '14px',
+                                                    height: '14px',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: '7px',
+                                                    fontWeight: 'bold',
+                                                    color: 'white'
+                                                }}>T</div>
+                                                <span style={{fontSize: '13px', fontWeight: '600', color: '#4ADE80'}}>+0.5 token</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="up-next-thumbnail mountains" style={{position: 'relative'}}>
+                                            <div className="play-overlay">
+                                                <div className="play-icon">▶</div>
+                                            </div>
+                                        </div>
+                                        <div className="up-next-info">
+                                            <div className="up-next-title">Why Boats and Planes Are Also Going Electric</div>
+                                            <div className="up-next-channel">Channel name</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    {/* Lightbox Modal */}
+                    <div className={`lightbox-overlay ${showLightbox ? 'active' : ''}`} onClick={() => setShowLightbox(false)}>
+                        <div className="lightbox-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="lightbox-inner">
+                                <div className="lightbox-close" onClick={() => setShowLightbox(false)}></div>
+                                <div className="lightbox-icon"></div>
+                                <h2 className="lightbox-title">Coming Soon!</h2>
+                                <button className="lightbox-button" onClick={() => setShowLightbox(false)}>
+                                    Got it!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PopologyApp />);
+    </script>
+</body>
+</html>
